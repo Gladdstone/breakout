@@ -8,14 +8,14 @@
 			padding: 0;
 			margin: 0;
 		}
-		
+
 		canvas {
 			background: #eee;
 			display: block;
 			margin: 0 auto;
 		}
 	</style>
-	
+
 </head>
 <body>
 	<canvas id="myCanvas" width="480" height="320"></canvas>
@@ -23,34 +23,67 @@
 <script>
 	var canvas = document.getElementById("myCanvas");
 	var ctx = canvas.getContext("2d");
-	
+
 	var x = canvas.width / 2;
-	
+
 	var y = canvas.height - 30;
-	
+
 	var dx = 2;
 	var dy = -2;
-	
+
 	var ballRadius = 10;
-	
+
 	var paddleHeight = 10;
 	var paddleWidth = 75;
 	var paddleX = (canvas.width - paddleWidth) / 2;
-	
+
 	var rightPressed = false;
 	var leftPressed = false;
-	
+
+	var brickRowCount = 3;
+	var brickColumnCount = 5;
+	var brickWidth = 75;
+	var brickHeight = 20;
+	var brickPadding = 10;
+	var brickOffsetTop = 30;
+	var brickOffsetLeft = 30;
+
+	var bricks = [];
+	for(i = 0; i < brickColumnCount; i++) {
+		bricks[i] = [];
+		for(n = 0; n < brickRowCount; n++) {
+			bricks[i][n] = {x: 0, y: 0, status: 1};
+		}
+	}
+
+
 	document.addEventListener("keydown", keyDownHandler, false);
 	document.addEventListener("keyup", keyUpHandler, false);
-	
-	
+
+
+	function collisionDetection() {
+		for(i = 0; i < brickColumnCount; i++) {
+			for(n = 0; n < brickRowCount; n++) {
+				var b = bricks[i][n];
+				if(b.status === 1) {
+					if(x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
+						dy = -dy;
+						b.status = 0;
+					}
+				}
+			}
+		}
+	}
+
 	function draw() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		
+
 		// draw objects
+		drawBricks();
 		drawBall();
 		drawPaddle();
-		
+		collisionDetection();
+
 		// move paddle object
 		if(rightPressed && paddleX < canvas.width - paddleWidth) {
 			paddleX += 7;
@@ -58,7 +91,7 @@
 		else if(leftPressed && paddleX > 0) {
 			paddleX -= 7;
 		}
-		
+
 		// move ball object
 		if(x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
 			dx = -dx;
@@ -78,15 +111,33 @@
 		x += dx;
 		y += dy;
 	} setInterval(draw, 10);
-	
+
 	function drawBall() {
 		ctx.beginPath();
 		ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-		ctx.fillStyel = "#0095dd";
+		ctx.fillStyle = "#0095dd";
 		ctx.fill();
 		ctx.closePath();
 	}
-	
+
+	function drawBricks() {
+		for(i = 0; i < brickColumnCount; i++) {
+			for(n = 0; n < brickRowCount; n++) {
+				if(bricks[i][n].status === 1) {
+					var brickX = (i * (brickWidth + brickPadding)) + brickOffsetLeft;
+					var brickY = (n * (brickHeight + brickPadding)) + brickOffsetTop;
+					bricks[i][n].x = brickX;
+					bricks[i][n].y = brickY;
+					ctx.beginPath();
+					ctx.rect(brickX, brickY, brickWidth, brickHeight);
+					ctx.fillStyle = "#0095dd";
+					ctx.fill();
+					ctx.closePath();
+				}
+			}
+		}
+	}
+
 	function drawPaddle() {
 		ctx.beginPath();
 		ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
@@ -94,7 +145,7 @@
 		ctx.fill();
 		ctx.closePath();
 	}
-	
+
 	function keyDownHandler(e) {
 		if(e.keyCode == 39) {
 			rightPressed = true;
@@ -103,7 +154,7 @@
 			leftPressed = true;
 		}
 	}
-	
+
 	function keyUpHandler(e) {
 		if(e.keyCode == 39) {
 			rightPressed = false;
@@ -112,7 +163,7 @@
 			leftPressed = false;
 		}
 	}
-	
+
 </script>
 
 </body>
